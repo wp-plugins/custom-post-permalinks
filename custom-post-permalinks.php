@@ -55,7 +55,7 @@ class JPB_Custom_Post_Permalinks{
 	 * @var string
 	 */
 	
-	var $version = '1.0';
+	var $version = '1.0.1';
 	
 	/**
 	 * Stores the plugin slug
@@ -120,18 +120,22 @@ class JPB_Custom_Post_Permalinks{
 	
 	function option_set(){
 		load_plugin_textdomain( $this->slug, null, basename( dirname( __FILE__ ) ) . '/lang' );
-		$this->post_types = get_post_types( array( '_builtin' => false, 'publicly_queryable' => true ), 'object' );
+		$this->post_types = get_post_types( array( '_builtin' => false, 'publicly_queryable' => true, 'hierarchical' => false ), 'object' );
 		$this->post_type_keys = array_keys( $this->post_types );
 		$version = get_option( $this->version_option );
 		if( empty( $version ) || version_compare( $this->version, $version, '!=' ) || ( count( $this->options['pstructs'] ) !== count($this->post_types) ) ){
 			$opt = array( 'pstructs' => array() );
+			global $wp_rewrite;
 			foreach( $this->post_types as $n => $p ){
-				global $wp_rewrite;
 				$struct = isset($wp_rewrite->extra_permastructs[$n][0]) ? $wp_rewrite->extra_permastructs[$n][0] : '';
 				$opt['pstructs'][$n] = $struct;
 			}
+			foreach( array_keys((array)$this->options['pstructs']) as $key ){
+				if( !isset( $this->post_types[$key] ) )
+					unset($this->options['pstructs'][$key]);
+			}
 			if( is_array($this->options) ){
-				$opt['pstructs'] = array_merge( $opt['pstructs'], $this->options['pstructs'] );
+				$opt['pstructs'] = array_merge( $opt['pstructs'], (array)$this->options['pstructs'] );
 				unset($this->options['pstructs']);
 				$this->options = array_merge( $opt, $this->options );
 			} else {
@@ -201,11 +205,13 @@ class JPB_Custom_Post_Permalinks{
 	 */
 	
 	function perm_san( $structs = array() ){
-		global $wp_rewrite;
+		global $wp_rewrite, $wp_taxonomies;
 		if( !is_array( $structs ) || empty( $structs ) || !$wp_rewrite->using_permalinks() )
 			return array();
 		$prefix = ( !iis7_supports_permalinks() && !got_mod_rewrite() ) ? '/index.php' : '';
 		foreach( $structs as $type => $struct){
+			if( false !== stripos($struct,'%category%') )
+				$struct = ( in_array( $this->post_types[$type], $wp_taxonomies['category']->object_type ) ) ? $struct : str_replace('%category%','',$struct);
 			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', $struct ) );
 			if( ( str_replace($type, '', $struct) == str_replace(array('postname','pagename'),'',$wp_rewrite->permalink_structure) ) && false === stripos( $struct, '%post_type%' ) )
 				$struct = '/%post_type%' . $struct;
@@ -279,6 +285,25 @@ class JPB_Custom_Post_Permalinks{
 	function extra_permalinks( $link, $post, $leavename, $sample ){
 		if( !isset($this->post_types[$post->post_type]) )
 			return $link;
+		global $wp_taxonomies;
+		$category = $author = false;
+		if( ( false !== stripos($link, '%category%') ) && in_array( $this->post_types[$post->post_type], $wp_taxonomies['category']->object_type ) ){
+			$cats = get_the_category($post->ID);
+			if($cats){
+				usort( $cats, '_usort_terms_by_id' );
+				$category = $cats[0]->slug;
+				if( $parent = $cats[0]->parent )
+					$category = get_category_parents($parent, false, '/', true) . $category;
+			}
+			if( empty($category) ){
+				$default_category = get_category( get_option( 'default_category' ) );
+				$category = is_wp_error( $default_category ) ? '' : $default_category->slug;
+			}
+		}
+		if( false !== stripos( $link, '%author%' ) ){
+			$authordata = get_userdata($post->post_author);
+			$author = $authordata->user_nicename;
+		}
 		$rewritecode = array(
 			'%year%',
 			'%monthnum%',
@@ -290,6 +315,8 @@ class JPB_Custom_Post_Permalinks{
 			'%post_id%',
 			$leavename? '' : '%pagename%',
 			'%post_type%',
+			'%category%',
+			$author? '%author%' : '',
 			$leavename? '' : '%'.$post->post_type.'%',
 		);
 		$unixtime = strtotime($post->post_date);
@@ -305,6 +332,8 @@ class JPB_Custom_Post_Permalinks{
 			$post->ID,
 			$post->post_name,
 			$this->post_types[$post->post_type]->rewrite['slug'],
+			$category? $category : '',
+			$author,
 			$post->post_name,
 		);
 		$path = str_replace($rewritecode, $replace_array, $link);
