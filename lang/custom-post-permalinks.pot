@@ -1,0 +1,70 @@
+# Translation of the WordPress plugin Custom Post Permalinks 1.0 by John P. Bloch.
+# Copyright (C) 2010 John P. Bloch
+# This file is distributed under the same license as the Custom Post Permalinks package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Custom Post Permalinks 1.0\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/custom-post-permalinks\n"
+"POT-Creation-Date: 2010-08-13 18:23+0000\n"
+"PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: custom-post-permalinks.php:179
+msgid "Extra Permalink Settings for Non-Hierarchical Custom Post Types"
+msgstr ""
+
+#: custom-post-permalinks.php:181
+#, php-format
+msgid "Custom Permalink for %s"
+msgstr ""
+
+#: custom-post-permalinks.php:245
+#, php-format
+msgid ""
+"Permalinks settings for custom post types. You may use the same tags as "
+"above in the permastructs. If you use %1$s, make sure the post type actually "
+"uses categories and not another taxonomy. In addition to the normal tags "
+"above, you may use the %2$s tag to match the rewrite slug for the post type. "
+"Additionally, each post type has its own rewrite tag to match the name of "
+"the post in the URL. Post type rewrite tags are beside their respective post "
+"types."
+msgstr ""
+
+#: custom-post-permalinks.php:249
+#, php-format
+msgid ""
+"For example, with a post type named %1$s, a permalink like %2$s would look "
+"like %3$s."
+msgstr ""
+
+#: custom-post-permalinks.php:267
+#, php-format
+msgid "The permalink tag for the post name for %1$s is %2$s."
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "Custom Post Permalinks"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "http://www.johnpbloch.com"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Adds more flexible permalinks for custom post types."
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "John P. Bloch"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://www.johnpbloch.com/"
+msgstr ""
