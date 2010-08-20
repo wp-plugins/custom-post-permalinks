@@ -4,7 +4,7 @@ Donate Link: http://www.johnpbloch.com/
 Tags: custom post type, custom permalink, permalink, permalinks, custom permalinks, custom post types, post permalinks, flexible permalinks, flexible permalink, post type permalink, post type, post type permalinks
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 
 Custom Post Permalinks will set up permalinks for non-hierarchical custom post types which have the flexibility of blog post permalinks.
 
@@ -37,6 +37,9 @@ None yet.
 
 == Changelog ==
 
+= 1.0.2 =
+* Fixed code that improperly checked for categories
+
 = 1.0.1 =
 * Added category and author handling in permalinks.
 * Restricted post types to non-hierarchical types.
@@ -46,6 +49,9 @@ None yet.
 * First stable release
 
 == Upgrade Notice ==
+
+= 1.0.2 =
+* If you wish to use categories in your permalink, you must upgrade, as that bug was fixed in this version.
 
 = 1.0.1 =
 * Restricted plugin to non-hierarchical post types (it doesn't work so well with hierarchical types)

@@ -210,8 +210,8 @@ class JPB_Custom_Post_Permalinks{
 			return array();
 		$prefix = ( !iis7_supports_permalinks() && !got_mod_rewrite() ) ? '/index.php' : '';
 		foreach( $structs as $type => $struct){
-			if( false !== stripos($struct,'%category%') )
-				$struct = ( in_array( $this->post_types[$type], $wp_taxonomies['category']->object_type ) ) ? $struct : str_replace('%category%','',$struct);
+			if( false !== stripos($struct,'%category%') && !is_object_in_taxonomy($type,'category') )
+				$struct = str_replace('%category%','',$struct);
 			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', $struct ) );
 			if( ( str_replace($type, '', $struct) == str_replace(array('postname','pagename'),'',$wp_rewrite->permalink_structure) ) && false === stripos( $struct, '%post_type%' ) )
 				$struct = '/%post_type%' . $struct;
@@ -287,7 +287,7 @@ class JPB_Custom_Post_Permalinks{
 			return $link;
 		global $wp_taxonomies;
 		$category = $author = false;
-		if( ( false !== stripos($link, '%category%') ) && in_array( $this->post_types[$post->post_type], $wp_taxonomies['category']->object_type ) ){
+		if( ( false !== stripos($link, '%category%') ) && is_object_in_taxonomy( $post->post_type, 'category' ) ){
 			$cats = get_the_category($post->ID);
 			if($cats){
 				usort( $cats, '_usort_terms_by_id' );
