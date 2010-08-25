@@ -4,7 +4,7 @@ Plugin Name: Custom Post Permalinks
 Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
-Version: 1.0.2
+Version: 1.0.3
 Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
@@ -158,13 +158,14 @@ class JPB_Custom_Post_Permalinks{
 	
 	function init(){
 		if(!empty($this->post_types)){
-			$pt_rewrites = array();
-			foreach( $this->post_types as $t )
-				$pt_rewrites[] = $t->rewrite['slug'];
-			$rw_regex = '(' . implode('|', $pt_rewrites) . ')';
-			add_rewrite_tag( '%post_type%', $rw_regex );
-			foreach($this->options['pstructs'] as $k => $struct)
-				add_permastruct( $k, $struct, true, EP_PERMALINK );
+			global $wp_rewrite;
+			foreach($this->options['pstructs'] as $k => $struct){
+				$rw_slug = empty( $this->post_types[$k]->rewrite['slug'] ) ? $k : $this->post_types[$k]->rewrite['slug'];
+				$wp_rewrite->add_rewrite_tag( '%post_type_' . $rw_slug . '%', '('.$rw_slug.')', 'post_type=' );
+				$struct = str_replace( '%post_type%', '%post_type_' . $rw_slug . '%', $struct );
+				$with_front = ! empty( $this->post_types[$k]->rewrite['with_front'] );
+				add_permastruct( $k, $struct, $with_front, EP_PERMALINK );
+			}
 		}
 	}
 	
@@ -191,8 +192,12 @@ class JPB_Custom_Post_Permalinks{
 			if(!empty($_POST[$this->settings_name]))
 				$this->options = array_merge( $this->options, $_POST[$this->settings_name] );
 			update_option( $this->settings_name, $this->options );
-			foreach($this->options['pstructs'] as $k => $struct)
-				add_permastruct( $k, $struct, true, EP_PERMALINK );
+			foreach($this->options['pstructs'] as $k => $struct){
+				$rw_slug = empty( $this->post_types[$k]->rewrite['slug'] ) ? $k : $this->post_types[$k]->rewrite['slug'];
+				$struct = str_replace( '%post_type%', '%post_type_' . $rw_slug . '%', $struct );
+				$with_front = ! empty( $this->post_types[$k]->rewrite['with_front'] );
+				add_permastruct( $k, $struct, $with_front, EP_PERMALINK );
+			}
 		}
 	}
 	
@@ -314,7 +319,7 @@ class JPB_Custom_Post_Permalinks{
 			$leavename? '' : '%postname%',
 			'%post_id%',
 			$leavename? '' : '%pagename%',
-			'%post_type%',
+			'%post_type_' . ( empty($this->post_types[$post->post_type]->rewrite['slug']) ? $post->post_type : $this->post_types[$post->post_type]->rewrite['slug'] ) .'%',
 			'%category%',
 			$author? '%author%' : '',
 			$leavename? '' : '%'.$post->post_type.'%',
