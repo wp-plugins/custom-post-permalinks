@@ -4,7 +4,7 @@ Plugin Name: Custom Post Permalinks
 Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
-Version: 1.0.3
+Version: 1.1-beta
 Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
@@ -82,6 +82,12 @@ class JPB_Custom_Post_Permalinks{
 	var $post_type_keys = array();
 	
 	/**
+	 * Stores all taxonomies for post types in an associative array: array( 'post_type' => array( 'taxonomy' ) )
+	 */
+	
+	var $post_type_taxonomies = array();
+	
+	/**
 	 * PHP4 Constructor
 	 * 
 	 * Calls the PHP5 constructor; takes no arguments
@@ -102,8 +108,8 @@ class JPB_Custom_Post_Permalinks{
 	 */
 	
 	function __construct(){
-		add_action('init', array($this, 'option_set'), 99);
-		add_action( 'init', array( $this, 'init' ), 100 );
+		add_action('wp_loaded', array($this, 'option_set'), 99);
+		add_action( 'wp_loaded', array( $this, 'init' ), 100 );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
 		add_action('parse_request', array($this,'request_filter'),10,1);
@@ -120,12 +126,23 @@ class JPB_Custom_Post_Permalinks{
 	
 	function option_set(){
 		load_plugin_textdomain( $this->slug, null, basename( dirname( __FILE__ ) ) . '/lang' );
-		$this->post_types = get_post_types( array( '_builtin' => false, 'publicly_queryable' => true, 'hierarchical' => false ), 'object' );
+		$this->post_types = get_post_types( array( '_builtin' => false, 'publicly_queryable' => true ), 'object' );
 		$this->post_type_keys = array_keys( $this->post_types );
+		global $wp_rewrite, $wp_taxonomies;
+		foreach( $wp_taxonomies as $tax => $t ){
+			if( !$t->_builtin ){
+				foreach( $t->object_type as $pt ){
+					if(isset($this->post_types[$pt])){
+						$key = array_search( "%$tax%", $wp_rewrite->rewritecode );
+						$wp_rewrite->rewritereplace[$key] = '(.+?)';
+						$this->post_types[$pt]->taxonomies[] = $tax;
+					}
+				}
+			}
+		}
 		$version = get_option( $this->version_option );
 		if( empty( $version ) || version_compare( $this->version, $version, '!=' ) || ( count( $this->options['pstructs'] ) !== count($this->post_types) ) ){
 			$opt = array( 'pstructs' => array() );
-			global $wp_rewrite;
 			foreach( $this->post_types as $n => $p ){
 				$struct = isset($wp_rewrite->extra_permastructs[$n][0]) ? $wp_rewrite->extra_permastructs[$n][0] : '';
 				$opt['pstructs'][$n] = $struct;
@@ -149,7 +166,7 @@ class JPB_Custom_Post_Permalinks{
 	/**
 	 * Registers core functionality of the plugin.
 	 * 
-	 * This function runs at init, but on priority 100 so as not to miss any custom post types.
+	 * This function runs at wp_loaded, but on priority 100 so as not to miss any custom post types.
 	 * If there are no custom post types that need the permalink structures, do nothing. Otherwise,
 	 * set up the post_type rewrite tag and add the permastructs.
 	 * 
@@ -161,8 +178,8 @@ class JPB_Custom_Post_Permalinks{
 			global $wp_rewrite;
 			foreach($this->options['pstructs'] as $k => $struct){
 				$rw_slug = empty( $this->post_types[$k]->rewrite['slug'] ) ? $k : $this->post_types[$k]->rewrite['slug'];
-				$wp_rewrite->add_rewrite_tag( '%post_type_' . $rw_slug . '%', '('.$rw_slug.')', 'post_type=' );
-				$struct = str_replace( '%post_type%', '%post_type_' . $rw_slug . '%', $struct );
+				$wp_rewrite->add_rewrite_tag( '%post_type_' . $k . '%', '('.$rw_slug.')', 'post_type=' );
+				$struct = str_replace( '%post_type%', '%post_type_' . $k . '%', $struct );
 				$with_front = ! empty( $this->post_types[$k]->rewrite['with_front'] );
 				add_permastruct( $k, $struct, $with_front, EP_PERMALINK );
 			}
@@ -202,6 +219,35 @@ class JPB_Custom_Post_Permalinks{
 	}
 	
 	/**
+	 * Returns an array of the allowed rewrite tags for the given post type
+	 * 
+	 * @since 1.1
+	 * @param $post_type string The post type to be checked for
+	 * @return array The allowed rewrite tags
+	 */
+	
+	function get_allowed_tags( $post_type, $leavename = false ){
+		$tags = array(
+			'%year%',
+			'%monthnum%',
+			'%day%',
+			'%hour%',
+			'%minute%',
+			'%second%',
+			'%post_id%',
+			'%author%',
+		);
+		if( !empty( $this->post_types[$post_type]->taxonomies ) ){
+			// Add the post type's taxonomy tags
+			foreach( $this->post_types[$post_type]->taxonomies as $tax )
+				$tags[] = $tax == 'post_tag' ? '%tag%' : '%' . $tax . '%';
+		}
+		$tags[] = '%post_type_' . $post_type . '%';
+		$tags[] = $leavename ? '' : '%' . $post_type . '%';
+		return $tags;
+	}
+	
+	/**
 	 * Filters custom permastructs to make sure they're valid
 	 * 
 	 * @since 1.0
@@ -215,9 +261,13 @@ class JPB_Custom_Post_Permalinks{
 			return array();
 		$prefix = ( !iis7_supports_permalinks() && !got_mod_rewrite() ) ? '/index.php' : '';
 		foreach( $structs as $type => $struct){
-			if( false !== stripos($struct,'%category%') && !is_object_in_taxonomy($type,'category') )
-				$struct = str_replace('%category%','',$struct);
-			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', $struct ) );
+			$allowed_tags = $this->get_allowed_tags( $type );
+			foreach($allowed_tags as $at)
+				$a_t[] = trim($at,'%');
+			$struct = preg_replace( '@%('.implode('|',$a_t).'|post_type)%@', 'TPPALL$1TPPALL', $struct );
+			$struct = preg_replace( '@%[^%/]*%@', '', $struct );
+			$struct = str_replace( 'TPPALL', '%', $struct );
+			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', ltrim( $struct, '/' ) ) );
 			if( ( str_replace($type, '', $struct) == str_replace(array('postname','pagename'),'',$wp_rewrite->permalink_structure) ) && false === stripos( $struct, '%post_type%' ) )
 				$struct = '/%post_type%' . $struct;
 			$structs[$type] = $prefix . $struct;
@@ -290,40 +340,12 @@ class JPB_Custom_Post_Permalinks{
 	function extra_permalinks( $link, $post, $leavename, $sample ){
 		if( !isset($this->post_types[$post->post_type]) )
 			return $link;
-		global $wp_taxonomies;
-		$category = $author = false;
-		if( ( false !== stripos($link, '%category%') ) && is_object_in_taxonomy( $post->post_type, 'category' ) ){
-			$cats = get_the_category($post->ID);
-			if($cats){
-				usort( $cats, '_usort_terms_by_id' );
-				$category = $cats[0]->slug;
-				if( $parent = $cats[0]->parent )
-					$category = get_category_parents($parent, false, '/', true) . $category;
-			}
-			if( empty($category) ){
-				$default_category = get_category( get_option( 'default_category' ) );
-				$category = is_wp_error( $default_category ) ? '' : $default_category->slug;
-			}
-		}
+		$author = '';
 		if( false !== stripos( $link, '%author%' ) ){
 			$authordata = get_userdata($post->post_author);
 			$author = $authordata->user_nicename;
 		}
-		$rewritecode = array(
-			'%year%',
-			'%monthnum%',
-			'%day%',
-			'%hour%',
-			'%minute%',
-			'%second%',
-			$leavename? '' : '%postname%',
-			'%post_id%',
-			$leavename? '' : '%pagename%',
-			'%post_type_' . ( empty($this->post_types[$post->post_type]->rewrite['slug']) ? $post->post_type : $this->post_types[$post->post_type]->rewrite['slug'] ) .'%',
-			'%category%',
-			$author? '%author%' : '',
-			$leavename? '' : '%'.$post->post_type.'%',
-		);
+		$rewritecode = $this->get_allowed_tags( $post->post_type, $leavename );
 		$unixtime = strtotime($post->post_date);
 		$date = explode(' ', date('Y m d H i s', $unixtime));
 		$replace_array = array(
@@ -333,16 +355,81 @@ class JPB_Custom_Post_Permalinks{
 			$date[3],
 			$date[4],
 			$date[5],
-			$post->post_name,
 			$post->ID,
-			$post->post_name,
-			$this->post_types[$post->post_type]->rewrite['slug'],
-			$category? $category : '',
 			$author,
-			$post->post_name,
 		);
+		if( !empty( $this->post_types[$post->post_type]->taxonomies ) ){
+			foreach( $this->post_types[$post->post_type]->taxonomies as $tax ){
+				if( false === stripos( $link, '%'.$tax.'%' ) ){
+					$addition = 'null';
+				} else {
+					$addition = $this->get_tax_string( $tax, $post );
+				}
+				$replace_array[] = $addition;
+			}
+		}
+		$replace_array[] = (isset($this->post_types[$post->post_type]->rewrite['slug']) && !empty($this->post_types[$post->post_type]->rewrite['slug'])) ? $this->post_types[$post->post_type]->rewrite['slug'] : $post->post_type;
+		$replace_array[] = $post->post_name;
 		$path = str_replace($rewritecode, $replace_array, $link);
+		/*
+		echo '<pre>';
+		var_dump($replace_array, $rewritecode);
+		echo '</pre>';
+		//*/
 		return $path;
+	}
+	
+	/**
+	 * Returns the taxonomy string to be inserted into the permalink
+	 * 
+	 * @since 1.1
+	 * @param $tax string The taxonomy being evaluated
+	 * @return string The taxonomy string for the permalink
+	 */
+	
+	function get_tax_string( $tax, $post ){
+		$addition = '';
+		switch($tax){
+			case 'category':
+				$cats = get_the_category($post->ID);
+				if($cats){
+					usort( $cats, '_usort_terms_by_id' );
+					$addition = $cats[0]->slug;
+					if( $parent = $cats[0]->parent )
+						$addition = get_category_parents($parent, false, '/', true) . $addition;
+				}
+				if( empty($addition) ){
+					$default_category = get_category( get_option( 'default_category' ) );
+					$addition = is_wp_error( $default_category ) ? '' : $default_category->slug;
+				}
+				break;
+			case 'post_tag':
+				$tags = get_the_tags( $post->ID );
+				if( !is_wp_error( $tags ) && !empty( $tags ) ){
+					usort( $tags, '_usort_terms_by_id' );
+					$addition = $tags[0]->slug;
+				}
+				if( empty($addition))
+					$addition = '';
+				break;
+			default:
+				$terms = get_the_terms( $post->ID, $tax );
+				if( !is_wp_error( $terms ) && !empty( $terms ) ){
+					usort( $terms, '_usort_terms_by_id' );
+					$addition = $terms[0]->slug;
+					if( is_taxonomy_hierarchical( $tax ) && !empty( $terms[0]->parent ) ){
+						$parent_item = $terms[0]->parent;
+						while( !empty( $parent_item ) ){
+							$parent = get_term( $parent_item, $tax );
+							if( !is_wp_error( $parent ) && !empty( $parent ) )
+								$addition = $parent->slug . '/' . $addition;
+							$parent_item = empty($parent->parent) ? false : $parent->parent;
+						}
+					}
+				}
+				break;
+		}
+		return empty($addition) ? 'null' : $addition;
 	}
 	
 	/**
