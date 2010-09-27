@@ -317,8 +317,10 @@ class JPB_Custom_Post_Permalinks{
 	function permalinks_fields(){
 		$pt = array_shift( $this->post_type_keys );
 		$post_type = $this->post_types[$pt];
+		global $wp_rewrite;
+		$struct = isset( $this->options['pstructs'][$pt] ) && !empty( $this->options['pstructs'][$pt] ) ? $this->options['pstructs'][$pt] : $wp_rewrite->extra_permastructs[$pt][0];
 		?>
-		<input type="text" name="<?php echo $this->settings_name; ?>[pstructs][<?php echo $pt; ?>]" class="regular-text code" value="<?php echo $this->options['pstructs'][$pt]; ?>" /> <span class="description"><?php
+		<input type="text" name="<?php echo $this->settings_name; ?>[pstructs][<?php echo $pt; ?>]" class="regular-text code" value="<?php echo $struct; ?>" /> <span class="description"><?php
 		printf( __('The permalink tag for the post name for %1$s is %2$s.', $this->slug), $post_type->labels->name, '</span>%'.$pt.'%' );
 		?>
 		<?php
