@@ -9,6 +9,9 @@ Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
 
+if( !defined( 'CPP_TAXONOMY_DEFAULT_VALUE' ) )
+	define( 'CPP_TAXONOMY_DEFAULT_VALUE', _x( 'none', 'No taxonomy terms for post', 'custom-post-permalinks' ) );
+
 /**
  * JPB_Custom_Post_Permalinks class
  * 
@@ -373,11 +376,6 @@ class JPB_Custom_Post_Permalinks{
 		$replace_array[] = (isset($this->post_types[$post->post_type]->rewrite['slug']) && !empty($this->post_types[$post->post_type]->rewrite['slug'])) ? $this->post_types[$post->post_type]->rewrite['slug'] : $post->post_type;
 		$replace_array[] = $post->post_name;
 		$path = str_replace($rewritecode, $replace_array, $link);
-		/*
-		echo '<pre>';
-		var_dump($replace_array, $rewritecode);
-		echo '</pre>';
-		//*/
 		return $path;
 	}
 	
@@ -431,7 +429,7 @@ class JPB_Custom_Post_Permalinks{
 				}
 				break;
 		}
-		return empty($addition) ? 'null' : $addition;
+		return empty($addition) ? CPP_TAXONOMY_DEFAULT_VALUE : $addition;
 	}
 	
 	/**
