@@ -85,12 +85,6 @@ class JPB_Custom_Post_Permalinks{
 	var $post_type_keys = array();
 	
 	/**
-	 * Stores all taxonomies for post types in an associative array: array( 'post_type' => array( 'taxonomy' ) )
-	 */
-	
-	var $post_type_taxonomies = array();
-	
-	/**
 	 * PHP4 Constructor
 	 * 
 	 * Calls the PHP5 constructor; takes no arguments
@@ -111,13 +105,14 @@ class JPB_Custom_Post_Permalinks{
 	 */
 	
 	function __construct(){
-		add_action('wp_loaded', array($this, 'option_set'), 99);
+		add_action( 'wp_loaded', array( $this, 'option_set' ), 99 );
 		add_action( 'wp_loaded', array( $this, 'init' ), 100 );
 		add_action( 'admin_init', array( $this, 'admin_init' ) );
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
-		add_action('parse_request', array($this,'request_filter'),10,1);
-		add_filter('post_type_link',array($this,'extra_permalinks'),10,4);
-		$this->options = get_option($this->settings_name);
+		add_action( 'parse_request', array( $this, 'request_filter' ), 10, 1 );
+		add_action( 'permalink_structure_changed', array( $this, 'update' ), 10, 1 );
+		add_filter( 'post_type_link', array( $this, 'extra_permalinks' ), 10, 4 );
+		$this->options = get_option( $this->settings_name );
 	}
 	
 	/**
@@ -184,7 +179,7 @@ class JPB_Custom_Post_Permalinks{
 				$wp_rewrite->add_rewrite_tag( '%post_type_' . $k . '%', '('.$rw_slug.')', 'post_type=' );
 				$struct = str_replace( '%post_type%', '%post_type_' . $k . '%', $struct );
 				$with_front = ! empty( $this->post_types[$k]->rewrite['with_front'] );
-				add_permastruct( $k, $struct, $with_front, EP_PERMALINK );
+				add_permastruct( $k, $struct, $with_front, $this->post_types[$k]->permalink_epmask );
 			}
 		}
 	}
@@ -201,6 +196,30 @@ class JPB_Custom_Post_Permalinks{
 			foreach( $this->post_types as $n => $t )
 				add_settings_field( $this->slug . '_pt_' . $n, sprintf( __('Custom Permalink for %s',$this->slug), $t->labels->name ), array($this,'permalinks_fields'), 'permalink', $this->slug . '_section' );
 		}
+		if( isset( $_POST['permalink_structure'] ) ){
+			global $wp_rewrite;
+			$prefix = ( ! got_mod_rewrite() && ! $iis7_permalinks ) ? '/index.php' : '';
+			if( !empty( $_POST['permalink_structure'] ) ){
+				$permalink = preg_replace( '@/+@', '/', '/' . str_replace( '#', '', $_POST['permalink_structure'] ) );
+				if($prefix)
+					$permalink = $prefix . preg_replace( '#^/?index\.php#', '', $permalink );
+				if( $wp_rewrite->permalink_structure == $permalink ){
+					$this->update( $wp_rewrite->permalink_structure );
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Updates the custom permastructs
+	 * 
+	 * @since 1.1
+	 * @param $structure string The new permalink structure
+	 */
+	
+	function update( $structure ){
+		if( empty( $structure ) )
+			return;
 		if( isset( $_POST[$this->settings_name] ) && is_array( $_POST[$this->settings_name] ) && current_user_can('manage_options') ){
 			check_admin_referer( $this->slug . '_update_permalinks', '_wpnonce_custom' );
 			foreach($_POST[$this->settings_name] as $k => $v){
@@ -216,7 +235,7 @@ class JPB_Custom_Post_Permalinks{
 				$rw_slug = empty( $this->post_types[$k]->rewrite['slug'] ) ? $k : $this->post_types[$k]->rewrite['slug'];
 				$struct = str_replace( '%post_type%', '%post_type_' . $rw_slug . '%', $struct );
 				$with_front = ! empty( $this->post_types[$k]->rewrite['with_front'] );
-				add_permastruct( $k, $struct, $with_front, EP_PERMALINK );
+				add_permastruct( $k, $struct, $with_front, $this->post_types[$k]->permalink_epmask );
 			}
 		}
 	}
@@ -273,6 +292,11 @@ class JPB_Custom_Post_Permalinks{
 			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', ltrim( $struct, '/' ) ) );
 			if( ( str_replace($type, '', $struct) == str_replace(array('postname','pagename'),'',$wp_rewrite->permalink_structure) ) && false === stripos( $struct, '%post_type%' ) )
 				$struct = '/%post_type%' . $struct;
+			if( ( $wp_rewrite->front != '/' ) && !empty($wp_rewrite->front) && !empty( $this->post_types[$type]->rewrite['with_front'] ) )
+				$struct = ltrim( $struct, '/' );
+			$struct = rtrim( $struct, '/' );
+			if( $wp_rewrite->use_trailing_slashes )
+				$struct .= '/';
 			$structs[$type] = $prefix . $struct;
 		}
 		return $structs;
