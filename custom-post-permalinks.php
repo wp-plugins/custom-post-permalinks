@@ -289,7 +289,7 @@ class JPB_Custom_Post_Permalinks{
 			$struct = preg_replace( '@%('.implode('|',$a_t).'|post_type)%@', 'TPPALL$1TPPALL', $struct );
 			$struct = preg_replace( '@%[^%/]*%@', '', $struct );
 			$struct = str_replace( 'TPPALL', '%', $struct );
-			$struct = preg_replace( '#/+#', '/', '/' . str_replace( array('#',' '), '', ltrim( $struct, '/' ) ) );
+			$struct = preg_replace( '#/+#', '/', str_replace( array('#',' '), '', ltrim( $struct, '/' ) ) );
 			if( ( str_replace($type, '', $struct) == str_replace(array('postname','pagename'),'',$wp_rewrite->permalink_structure) ) && false === stripos( $struct, '%post_type%' ) )
 				$struct = '/%post_type%' . $struct;
 			if( ( $wp_rewrite->front != '/' ) && !empty($wp_rewrite->front) && !empty( $this->post_types[$type]->rewrite['with_front'] ) )
@@ -346,6 +346,8 @@ class JPB_Custom_Post_Permalinks{
 		$post_type = $this->post_types[$pt];
 		global $wp_rewrite;
 		$struct = isset( $this->options['pstructs'][$pt] ) && !empty( $this->options['pstructs'][$pt] ) ? $this->options['pstructs'][$pt] : $wp_rewrite->extra_permastructs[$pt][0];
+		if( '/' != $struct{0} )
+			$struct = '/' . $struct;
 		?>
 		<input type="text" name="<?php echo $this->settings_name; ?>[pstructs][<?php echo $pt; ?>]" class="regular-text code" value="<?php echo $struct; ?>" /> <span class="description"><?php
 		printf( __('The permalink tag for the post name for %1$s is %2$s.', $this->slug), $post_type->labels->name, '</span>%'.$pt.'%' );
