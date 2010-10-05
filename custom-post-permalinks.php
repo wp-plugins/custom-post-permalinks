@@ -112,6 +112,7 @@ class JPB_Custom_Post_Permalinks{
 		add_action( 'parse_request', array( $this, 'request_filter' ), 10, 1 );
 		add_action( 'permalink_structure_changed', array( $this, 'update' ), 10, 1 );
 		add_filter( 'post_type_link', array( $this, 'extra_permalinks' ), 10, 4 );
+		add_filter( 'rewrite_rules_array', array( $this, 'rise_to_the_top' ), 100 );
 		$this->options = get_option( $this->settings_name );
 	}
 	
@@ -477,6 +478,36 @@ class JPB_Custom_Post_Permalinks{
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * Bumps important page/feed rewrite rules to the top of the array.
+	 * 
+	 * Hooks into rewrite_rules_array (fires only on updating the permalinks)
+	 * 
+	 * @since 1.1
+	 * @param $rules array The finished rewrite rules
+	 * @return array The sorted array of rewrite rules
+	 */
+	
+	function rise_to_the_top( $rules ){
+		if( empty( $this->post_types ) )
+			return $rules;
+		$top = array();
+		foreach( $rules as $regex => $args ){
+			foreach( $this->post_types as $k => $t ){
+				$slug = (isset($t->rewrite['slug']) && !empty($t->rewrite['slug']))?$t->rewrite['slug'] : $k;
+				if( ( false !== strpos( $regex, "($slug)" ) ) && (
+						( false !== strpos( $regex, '/page/' ) ) ||
+						( false !== strpos( $regex, '/feed/' ) ) ||
+						( false !== strpos( $regex, '/(feed|' ) ) ) ){
+					$top = array_merge( array( $regex => $args ), $top );
+				}
+			}
+		}
+		if(!empty($top))
+			$rules = array_merge( $top, $rules );
+		return $rules;
 	}
 
 }
