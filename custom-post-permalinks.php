@@ -58,7 +58,7 @@ class JPB_Custom_Post_Permalinks{
 	 * @var string
 	 */
 	
-	var $version = '1.0.1';
+	var $version = '1.1.1';
 	
 	/**
 	 * Stores the plugin slug
@@ -133,8 +133,10 @@ class JPB_Custom_Post_Permalinks{
 				foreach( $t->object_type as $pt ){
 					if(isset($this->post_types[$pt])){
 						$key = array_search( "%$tax%", $wp_rewrite->rewritecode );
-						$wp_rewrite->rewritereplace[$key] = '(.+?)';
-						$this->post_types[$pt]->taxonomies[] = $tax;
+						if(false !== $key){
+							$wp_rewrite->rewritereplace[$key] = '(.+?)';
+							$this->post_types[$pt]->taxonomies[] = $tax;
+						}
 					}
 				}
 			}
@@ -157,8 +159,11 @@ class JPB_Custom_Post_Permalinks{
 			} else {
 				$this->options = $opt;
 			}
+			if( version_compare( $this->version, $version '!=' ) ){
+				add_action( 'admin_init', 'flush_rewrite_rules', 1 );
+				update_option( $this->version_option, $this->version );
+			}
 			update_option( $this->settings_name, $this->options );
-			update_option( $this->version_option, $this->version );
 		}
 	}
 	
