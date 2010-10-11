@@ -4,9 +4,9 @@ Donate Link: http://www.johnpbloch.com/
 Tags: custom post type, custom permalink, permalink, permalinks, custom permalinks, custom post types, post permalinks, flexible permalinks, flexible permalink, post type permalink, post type, post type permalinks
 Requires at least: 3.0
 Tested up to: 3.0.1
-Stable tag: 1.0.3
+Stable tag: 1.1.1
 
-Custom Post Permalinks will set up permalinks for non-hierarchical custom post types which have the flexibility of blog post permalinks.
+Custom Post Permalinks sets up permalinks for custom post types and gives you control over the permalink structure just like you have for blog post permalinks out of the box.
 
 == Description ==
 
@@ -21,6 +21,11 @@ which would also enable post type specific archives:
 
 Special thanks goes out to Aaron Jorbin for helping me with reviewing the code and making the plugin better in general.
 
+Props to Michael Fields too for his help as a beta tester.
+
+If you find a bug or have a feature request, head on over to
+http://bugs.johnpbloch.com and create a ticket.
+
 == Installation ==
 
 1. Use WordPress' built in plugin installer (or otherwise upload the custom-post-permalinks directory and its contents to your plugins directory)
@@ -28,10 +33,6 @@ Special thanks goes out to Aaron Jorbin for helping me with reviewing the code a
 1. Go to your Permalinks settings page and modify the permalinks to your heart's content.
 
 == Frequently Asked Questions ==
-
-= I don't see my custom post types on the permalinks page! What's wrong? =
-
-This plugin only works with non-hierarchical post types (the kind that look and act like blog posts). Chances are, your post type is hierarchical
 
 = The plugin added text to my permalinks! What's happening? =
 
@@ -42,6 +43,15 @@ The plugin will check your custom permalinks and compare them to the default per
 1. The permalinks settings screen with a few extra post types.
 
 == Changelog ==
+
+= 1.1.1 =
+* Fixed a bug in custom taxonomy permalinks
+
+= 1.1 =
+* Fixed two major bugs in the way certain structures were handled
+* Added support for hierarchical post types
+* Added uninstall script to delete data and flush rewrite rules
+* Added support for all taxonomies
 
 = 1.0.3 =
 * Fixed a major bug that would break permalinks under certain conditions
@@ -59,16 +69,5 @@ The plugin will check your custom permalinks and compare them to the default per
 
 == Upgrade Notice ==
 
-= 1.0.3 =
-* Major bug fix. Not a security update, but very important to upgrade.
-
-= 1.0.2 =
-* If you wish to use categories in your permalink, you must upgrade, as that bug was fixed in this version.
-
-= 1.0.1 =
-* Restricted plugin to non-hierarchical post types (it doesn't work so well with hierarchical types)
-* Added category and author handling in the permalinks
-* Added .pot file to lang directory
-
-= 1.0 =
-* Nothing yet: first release
+= 1.1.1 =
+* Fixed a bug in permalinks using custom taxonomies

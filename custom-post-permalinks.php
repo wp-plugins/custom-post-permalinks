@@ -4,7 +4,7 @@ Plugin Name: Custom Post Permalinks
 Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
-Version: 1.1-beta
+Version: 1.1.1
 Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
@@ -58,7 +58,7 @@ class JPB_Custom_Post_Permalinks{
 	 * @var string
 	 */
 	
-	var $version = '1.0.1';
+	var $version = '1.1.1';
 	
 	/**
 	 * Stores the plugin slug
@@ -133,8 +133,10 @@ class JPB_Custom_Post_Permalinks{
 				foreach( $t->object_type as $pt ){
 					if(isset($this->post_types[$pt])){
 						$key = array_search( "%$tax%", $wp_rewrite->rewritecode );
-						$wp_rewrite->rewritereplace[$key] = '(.+?)';
-						$this->post_types[$pt]->taxonomies[] = $tax;
+						if(false !== $key){
+							$wp_rewrite->rewritereplace[$key] = '(.+?)';
+							$this->post_types[$pt]->taxonomies[] = $tax;
+						}
 					}
 				}
 			}
@@ -157,8 +159,11 @@ class JPB_Custom_Post_Permalinks{
 			} else {
 				$this->options = $opt;
 			}
+			if( version_compare( $this->version, $version '!=' ) ){
+				add_action( 'admin_init', 'flush_rewrite_rules', 1 );
+				update_option( $this->version_option, $this->version );
+			}
 			update_option( $this->settings_name, $this->options );
-			update_option( $this->version_option, $this->version );
 		}
 	}
 	
@@ -325,7 +330,7 @@ class JPB_Custom_Post_Permalinks{
 	function permalinks_settings(){
 		?>
 		<p><?php
-		printf( __('Permalinks settings for custom post types. You may use the same tags as above in the permastructs. If you use %1$s, make sure the post type actually uses categories and not another taxonomy. In addition to the normal tags above, you may use the %2$s tag to match the rewrite slug for the post type. Additionally, each post type has its own rewrite tag to match the name of the post in the URL. Post type rewrite tags are beside their respective post types.', $this->slug), '<strong>%category%</strong>', '<strong>%post_type%</strong>' );
+		printf( __('Permalinks settings for custom post types. You may use the same tags as above in the permastructs. Additionally, you may add a tag for any taxonomy registered for a post type. For example, if you have a taxonomy called %1$s, the tag would be %2$s. If the post type is not registered for a taxonomy, the tag will be removed from the structure. In links that use taxonomies other than categories, if a post is not assigned any terms, it will be replaced by the word "null". To override this, define the constant %3$s in %4$s with the string you wish to use. In addition to the normal tags above, you may use the %5$s tag to match the rewrite slug for the post type. Additionally, each post type has its own rewrite tag to match the name of the post in the URL. Post type rewrite tags are beside their respective post types.', $this->slug), '<strong>foo_bar</strong>', '<strong>%foo_bar%</strong>', '<strong>CPP_TAXONOMY_DEFAULT_VALUE</strong>', '<strong>wp-config.php</strong>', '<strong>%post_type%</strong>' );
 		?></p>
 		<p>
 		<?php
@@ -519,5 +524,3 @@ class JPB_Custom_Post_Permalinks{
  */
 
 $JPBCPP = new JPB_Custom_Post_Permalinks();
-
-?>

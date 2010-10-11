@@ -1,4 +1,4 @@
-# Translation of the WordPress plugin Custom Post Permalinks 1.0.3 by John P. Bloch.
+# Translation of the WordPress plugin Custom Post Permalinks 1.1 by John P. Bloch.
 # Copyright (C) 2010 John P. Bloch
 # This file is distributed under the same license as the Custom Post Permalinks package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Custom Post Permalinks 1.0.3\n"
+"Project-Id-Version: Custom Post Permalinks 1.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/custom-post-permalinks\n"
-"POT-Creation-Date: 2010-08-25 21:12+0000\n"
+"POT-Creation-Date: 2010-10-11 21:18+0000\n"
 "PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,35 +16,45 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: custom-post-permalinks.php:180
+#: custom-post-permalinks.php:13
+msgctxt "No taxonomy terms for post"
+msgid "none"
+msgstr ""
+
+#: custom-post-permalinks.php:201
 msgid "Extra Permalink Settings for Non-Hierarchical Custom Post Types"
 msgstr ""
 
-#: custom-post-permalinks.php:182
+#: custom-post-permalinks.php:203
 #, php-format
 msgid "Custom Permalink for %s"
 msgstr ""
 
-#: custom-post-permalinks.php:250
+#: custom-post-permalinks.php:333
 #, php-format
 msgid ""
 "Permalinks settings for custom post types. You may use the same tags as "
-"above in the permastructs. If you use %1$s, make sure the post type actually "
-"uses categories and not another taxonomy. In addition to the normal tags "
-"above, you may use the %2$s tag to match the rewrite slug for the post type. "
+"above in the permastructs. Additionally, you may add a tag for any taxonomy "
+"registered for a post type. For example, if you have a taxonomy called %1$s, "
+"the tag would be %2$s. If the post type is not registered for a taxonomy, "
+"the tag will be removed from the structure. In links that use taxonomies "
+"other than categories, if a post is not assigned any terms, it will be "
+"replaced by the word \"null\". To override this, define the constant %3$s in "
+"%4$s with the string you wish to use. In addition to the normal tags above, "
+"you may use the %5$s tag to match the rewrite slug for the post type. "
 "Additionally, each post type has its own rewrite tag to match the name of "
 "the post in the URL. Post type rewrite tags are beside their respective post "
 "types."
 msgstr ""
 
-#: custom-post-permalinks.php:254
+#: custom-post-permalinks.php:337
 #, php-format
 msgid ""
 "For example, with a post type named %1$s, a permalink like %2$s would look "
 "like %3$s."
 msgstr ""
 
-#: custom-post-permalinks.php:272
+#: custom-post-permalinks.php:359
 #, php-format
 msgid "The permalink tag for the post name for %1$s is %2$s."
 msgstr ""
