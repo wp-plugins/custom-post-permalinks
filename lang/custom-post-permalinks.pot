@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Custom Post Permalinks 1.1\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/custom-post-permalinks\n"
-"POT-Creation-Date: 2010-10-07 15:51+0000\n"
+"POT-Creation-Date: 2010-10-11 21:18+0000\n"
 "PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,16 +21,16 @@ msgctxt "No taxonomy terms for post"
 msgid "none"
 msgstr ""
 
-#: custom-post-permalinks.php:196
+#: custom-post-permalinks.php:201
 msgid "Extra Permalink Settings for Non-Hierarchical Custom Post Types"
 msgstr ""
 
-#: custom-post-permalinks.php:198
+#: custom-post-permalinks.php:203
 #, php-format
 msgid "Custom Permalink for %s"
 msgstr ""
 
-#: custom-post-permalinks.php:328
+#: custom-post-permalinks.php:333
 #, php-format
 msgid ""
 "Permalinks settings for custom post types. You may use the same tags as "
@@ -47,14 +47,14 @@ msgid ""
 "types."
 msgstr ""
 
-#: custom-post-permalinks.php:332
+#: custom-post-permalinks.php:337
 #, php-format
 msgid ""
 "For example, with a post type named %1$s, a permalink like %2$s would look "
 "like %3$s."
 msgstr ""
 
-#: custom-post-permalinks.php:354
+#: custom-post-permalinks.php:359
 #, php-format
 msgid "The permalink tag for the post name for %1$s is %2$s."
 msgstr ""
