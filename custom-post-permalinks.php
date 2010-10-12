@@ -4,7 +4,7 @@ Plugin Name: Custom Post Permalinks
 Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
-Version: 1.1.1
+Version: 1.1.2
 Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
@@ -159,7 +159,7 @@ class JPB_Custom_Post_Permalinks{
 			} else {
 				$this->options = $opt;
 			}
-			if( version_compare( $this->version, $version '!=' ) ){
+			if( version_compare( $this->version, $version, '!=' ) ){
 				add_action( 'admin_init', 'flush_rewrite_rules', 1 );
 				update_option( $this->version_option, $this->version );
 			}
