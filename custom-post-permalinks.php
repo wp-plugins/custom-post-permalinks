@@ -159,7 +159,7 @@ class JPB_Custom_Post_Permalinks{
 			} else {
 				$this->options = $opt;
 			}
-			if( version_compare( $this->version, $version '!=' ) ){
+			if( version_compare( $this->version, $version, '!=' ) ){
 				add_action( 'admin_init', 'flush_rewrite_rules', 1 );
 				update_option( $this->version_option, $this->version );
 			}
