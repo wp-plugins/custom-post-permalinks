@@ -4,7 +4,7 @@ Plugin Name: Custom Post Permalinks
 Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
-Version: 1.1.3
+Version: 1.1.4
 Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
@@ -105,14 +105,14 @@ class JPB_Custom_Post_Permalinks{
 	 */
 	
 	function __construct(){
-		add_action( 'wp_loaded', array( $this, 'option_set' ), 99 );
-		add_action( 'wp_loaded', array( $this, 'init' ), 100 );
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
-		add_action( 'parse_request', array( $this, 'request_filter' ), 10, 1 );
-		add_action( 'permalink_structure_changed', array( $this, 'update' ), 10, 1 );
-		add_filter( 'post_type_link', array( $this, 'extra_permalinks' ), 10, 4 );
-		add_filter( 'rewrite_rules_array', array( $this, 'rise_to_the_top' ), 100 );
+		add_action( 'wp_loaded', array( &$this, 'option_set' ), 99 );
+		add_action( 'wp_loaded', array( &$this, 'init' ), 100 );
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
+		add_action( 'template_redirect', array( &$this, 'template_redirect' ) );
+		add_action( 'parse_request', array( &$this, 'request_filter' ), 10, 1 );
+		add_action( 'permalink_structure_changed', array( &$this, 'update' ), 10, 1 );
+		add_filter( 'post_type_link', array( &$this, 'extra_permalinks' ), 10, 4 );
+		add_filter( 'rewrite_rules_array', array( &$this, 'rise_to_the_top' ), 100 );
 		$this->options = get_option( $this->settings_name );
 	}
 	
@@ -198,9 +198,9 @@ class JPB_Custom_Post_Permalinks{
 	
 	function admin_init(){
 		if( !empty( $this->post_types ) ){
-			add_settings_section( $this->slug . '_section', __('Extra Permalink Settings for Non-Hierarchical Custom Post Types',$this->slug), array( $this, 'permalinks_settings' ), 'permalink' );
+			add_settings_section( $this->slug . '_section', __('Extra Permalink Settings for Non-Hierarchical Custom Post Types',$this->slug), array( &$this, 'permalinks_settings' ), 'permalink' );
 			foreach( $this->post_types as $n => $t )
-				add_settings_field( $this->slug . '_pt_' . $n, sprintf( __('Custom Permalink for %s',$this->slug), $t->labels->name ), array($this,'permalinks_fields'), 'permalink', $this->slug . '_section' );
+				add_settings_field( $this->slug . '_pt_' . $n, sprintf( __('Custom Permalink for %s',$this->slug), $t->labels->name ), array( &$this, 'permalinks_fields' ), 'permalink', $this->slug . '_section' );
 		}
 		if( isset( $_POST['permalink_structure'] ) ){
 			global $wp_rewrite;
