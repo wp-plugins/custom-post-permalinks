@@ -3,8 +3,8 @@ Contributors: JohnPBloch
 Donate Link: http://www.johnpbloch.com/
 Tags: custom post type, custom permalink, permalink, permalinks, custom permalinks, custom post types, post permalinks, flexible permalinks, flexible permalink, post type permalink, post type, post type permalinks
 Requires at least: 3.0
-Tested up to: 3.0.1
-Stable tag: 1.1.3
+Tested up to: 3.0.4
+Stable tag: 1.1.4
 
 Custom Post Permalinks sets up permalinks for custom post types and gives you control over the permalink structure just like you have for blog post permalinks out of the box.
 
@@ -44,6 +44,9 @@ The plugin will check your custom permalinks and compare them to the default per
 
 == Changelog ==
 
+= 1.1.4 =
+* Added better support for PHP4
+
 = 1.1.3 =
 * Another stupid bug fix.
 
@@ -75,5 +78,5 @@ The plugin will check your custom permalinks and compare them to the default per
 
 == Upgrade Notice ==
 
-= 1.1.2 =
-* Fixed a bug which broke permalinks for some post types with custom rewrite slugs.
+= 1.1.4 =
+* Added better support for PHP4.
