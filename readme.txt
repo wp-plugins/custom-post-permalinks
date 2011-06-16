@@ -1,6 +1,5 @@
 === Plugin Name ===
 Contributors: JohnPBloch
-Donate Link: http://www.johnpbloch.com/
 Tags: custom post type, custom permalink, permalink, permalinks, custom permalinks, custom post types, post permalinks, flexible permalinks, flexible permalink, post type permalink, post type, post type permalinks
 Requires at least: 3.0
 Tested up to: 3.0.4
@@ -9,6 +8,8 @@ Stable tag: 1.1.4
 Custom Post Permalinks sets up permalinks for custom post types and gives you control over the permalink structure just like you have for blog post permalinks out of the box.
 
 == Description ==
+
+= WARNING: This plugin is no longer supported or maintained by its author! Use at your own risk! =
 
 The plugin will set up custom post type permalinks for non-hierarchical permalinks which have the flexibility of blog post permalinks. So, for example, I could have a press release post type and set up permalinks like so:
 
@@ -22,9 +23,6 @@ which would also enable post type specific archives:
 Special thanks goes out to Aaron Jorbin for helping me with reviewing the code and making the plugin better in general.
 
 Props to Michael Fields too for his help as a beta tester.
-
-If you find a bug or have a feature request, head on over to
-http://bugs.johnpbloch.com and create a ticket.
 
 == Installation ==
 

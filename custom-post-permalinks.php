@@ -1,11 +1,9 @@
 <?php
 /*
 Plugin Name: Custom Post Permalinks
-Plugin URI: http://www.johnpbloch.com
 Description: Adds more flexible permalinks for custom post types.
 Author: John P. Bloch
 Version: 1.1.4
-Author URI: http://www.johnpbloch.com/
 Text Domain: custom-post-permalinks
 */
 
